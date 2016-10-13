@@ -40,4 +40,3 @@ def encode_ascii(clean=False):
         return func_wrapper
 
     return encode_ascii_decorator
-
