@@ -92,3 +92,5 @@ ENV/
 
 # Intellij IDEA files
 .idea/
+
+publish.sh
