@@ -1,1 +1,1 @@
-RESERVED = ('name', 'type')
+

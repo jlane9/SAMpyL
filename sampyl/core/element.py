@@ -7,7 +7,7 @@
 
 from lxml import html
 from lxml.cssselect import CSSSelector, SelectorError
-from shortcuts import encode_ascii
+from sampyl.core.shortcuts import encode_ascii
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -83,12 +83,34 @@ def join(*args):
 
 class SeleniumObject(object):
 
-    def __init__(self, web_driver):
+    def __init__(self, web_driver, **kwargs):
 
         self.driver = web_driver if isinstance(web_driver, WebDriver) else None
 
         if not self.driver:
             raise TypeError("'web_driver' MUST be a selenium WebDriver element")
+
+        if 'name_attr' in kwargs.keys():
+
+            if isinstance(['name_attr'], basestring):
+                self._name_attr = kwargs['name_attr']
+
+            else:
+                self._name_attr = 'data-qa-id'
+
+        else:
+            self._name_attr = 'data-qa-id'
+
+        if 'type_attr' in kwargs.keys():
+
+            if isinstance(['type_attr'], basestring):
+                self._type_attr = kwargs['type_attr']
+
+            else:
+                self._type_attr = 'data-qa-model'
+
+        else:
+            self._type_attr = 'data-qa-model'
 
 
 class Element(SeleniumObject):
