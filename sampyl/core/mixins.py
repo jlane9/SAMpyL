@@ -155,6 +155,17 @@ class SelectMixin(ElementMixin):
     """The SelectMixin implementation
     """
 
+    @staticmethod
+    def _to_int(value):
+
+        if isinstance(value, int) or isinstance(value, basestring):
+
+            if isinstance(value, basestring):
+                if value.isdigit():
+                    return int(value)
+
+            return value
+
     def deselect_all(self):
         """Deselect all selected options
 
@@ -194,12 +205,9 @@ class SelectMixin(ElementMixin):
 
             if element.tag_name == u'select':
 
-                if isinstance(option, int) or isinstance(option, basestring):
+                option = self._to_int(option)
 
-                    # Convert string to integer
-                    if isinstance(option, str):
-                        if option.isdigit():
-                            option = int(option)
+                if isinstance(option, int):
 
                     select = SeleniumSelect(element)
 
@@ -346,12 +354,9 @@ class SelectMixin(ElementMixin):
 
             if element.tag_name == u'select':
 
-                if isinstance(option, int) or isinstance(option, basestring):
+                option = self._to_int(option)
 
-                    # Convert string to int
-                    if isinstance(option, str):
-                        if option.isdigit():
-                            option = int(option)
+                if isinstance(option, int):
 
                     select = SeleniumSelect(element)
 

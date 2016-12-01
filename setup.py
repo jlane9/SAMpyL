@@ -3,8 +3,8 @@ from setuptools import setup, find_packages
 
 setup(
     name='sampyl',
-    version='0.0.5',
-    packages=find_packages(),
+    version='0.0.6',
+    packages=find_packages(exclude=['sampyl/core/inspect']),
     description='A wrapper for Selenium. This library uses custom data attributes to accelerate testing '
     'through the Selenium framework',
     author='John Lane',
