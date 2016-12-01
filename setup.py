@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='sampyl',
-    version='0.0.2',
+    version='0.0.4',
     packages=find_packages(),
     description='A wrapper for Selenium. This library uses custom data attributes to accelerate testing '
     'through the Selenium framework',
