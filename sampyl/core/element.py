@@ -5,6 +5,7 @@
 
 """
 
+import keyword
 from lxml import html
 from lxml.cssselect import CSSSelector, SelectorError
 from sampyl.core.shortcuts import encode_ascii
@@ -82,6 +83,8 @@ def join(*args):
 
 
 class SeleniumObject(object):
+    """The SeleniumObject implementation
+    """
 
     def __init__(self, web_driver, **kwargs):
 
@@ -233,6 +236,8 @@ class Element(SeleniumObject):
     def __getattr__(self, attribute):
         """Returns the value of an attribute
 
+        .. note:: class and for are both reserved keywords. Prepend '_' to reference both.
+
         :param str attribute: Element attribute
         :return: Returns the string value
         :rtype: str
@@ -240,11 +245,11 @@ class Element(SeleniumObject):
 
         if self.exists() and isinstance(attribute, basestring):
 
-            # Special cases
-            if attribute == "cls":
-                attribute = "class"
+            if keyword.iskeyword(attribute):
+                attribute = '_' + attribute
 
-            attribute = str(attribute).replace('_', '-')
+            else:
+                attribute = str(attribute).replace('_', '-')
 
             return self.element().get_attribute(attribute)
 

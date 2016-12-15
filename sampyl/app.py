@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""sampyl.app
+
+.. codeauthor:: John Lane <jlane@fanthreesixty.com>
+
+"""
+
 from sampyl.core.element import SeleniumObject
 # from sampyl.core.inspection import save_inspection
 from sampyl.core.structures import TYPES as T
@@ -6,12 +13,34 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 from urlparse import urlparse
+import keyword
+import re
 import warnings
 
-RESERVED = ('nodeName', 'nodeType')
+__all__ = ['App', 'Node']
+
+RESERVED = ('nodeName', 'nodeType', 'this')
 DEFAULT_TYPE = 'text'
 
-__all__ = ['App', 'Node']
+
+def is_legal_variable_name(name):
+
+    if isinstance(name, basestring):
+        if not keyword.iskeyword(name):
+            return bool(re.compile(r'^[a-zA-Z_][a-zA-Z0-9_]*$').search(name))
+
+    return False
+
+
+def force_legal_variable_name(name):
+
+    if isinstance(name, basestring):
+
+        re_keyword = '|'.join(['(^{}$)'.format(item) for item in keyword.kwlist])
+
+        return re.sub('|'.join(['(^[0-9]?[^a-zA-Z_])', re_keyword]), '_', name)
+
+    return '_'
 
 
 class App(SeleniumObject):
@@ -101,6 +130,12 @@ class App(SeleniumObject):
             self.page.add_children(*set(identifiers))
 
     def wait_until_present(self, _id, timeout=30):
+        """Wait until element with id is present
+
+        :param str _id: Element id to wait for
+        :param int timeout: Wait timeout in seconds
+        :return:
+        """
 
         search = '/descendant-or-self::*[contains(@data-qa-id, "{0}")]'
 
@@ -109,6 +144,29 @@ class App(SeleniumObject):
         try:
 
             wait.until(ec.presence_of_element_located((By.XPATH, search.format(str(_id)))))
+            return True
+
+        except TimeoutException:
+            pass
+
+        return False
+
+    def wait_until_disappears(self, _id, timeout=30):
+        """Wait until the element disappears
+
+        :param str _id: Element id to wait for
+        :param int timeout: Wait timeout in seconds
+        :return: True, if the wait does not timeout
+        :rtype: bool
+        """
+
+        search = '/descendant-or-self::*[contains(@data-qa-id, "{0}")]'
+
+        wait = WebDriverWait(self.driver, timeout) if isinstance(timeout, int) else WebDriverWait(self.driver, 30)
+
+        try:
+
+            wait.until(ec.invisibility_of_element_located((By.XPATH, search.format(str(_id)))))
             return True
 
         except TimeoutException:
@@ -133,14 +191,16 @@ class Node(SeleniumObject):
         root = root if isinstance(root, basestring) else ''
 
         # Get the first attribute from the identifier
-        cur = identifier.replace('-', '.').split('.', 1)
+        cur = identifier.split('.', 1)
 
         # Assign identifier
-        if cur[0] != '' and root != '':
-            self._identifier = '.'.join((root, cur[0]))
+        if cur[0] != '':
 
-        elif cur[0] != '':
-            self._identifier = cur[0]
+            if root != '':
+                self._identifier = '.'.join((root, cur[0]))
+
+            else:
+                self._identifier = cur[0]
 
         else:
             self._identifier = ''

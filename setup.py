@@ -1,19 +1,19 @@
 from setuptools import setup, find_packages
-
+from sampyl import __author__, __email__, __license__, __version__
 
 setup(
     name='sampyl',
-    version='0.0.6',
-    packages=find_packages(exclude=['sampyl/core/inspect']),
+    version=__version__,
+    packages=find_packages(),
     description='A wrapper for Selenium. This library uses custom data attributes to accelerate testing '
     'through the Selenium framework',
-    author='John Lane',
-    author_email='jlane@fanthreesixty.com',
+    author=__author__,
+    author_email=__email__,
     url='https://github.com/jlane9/SAMpyL',
-    download_url='https://github.com/jlane9/SAMpyL',
+    download_url='https://github.com/jlane9/SAMpyL/tarball/0.0.9',
     keywords='testing selenium qa web automation',
-    install_requires=[],
-    license='MIT',
+    install_requires=['lxml', 'cssselect', 'PyYAML'],
+    license=__license__,
     classifiers=['Development Status :: 3 - Alpha',
                  'Intended Audience :: Developers',
                  'Programming Language :: Python :: 2.6',

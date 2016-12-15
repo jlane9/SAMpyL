@@ -11,8 +11,8 @@ from selenium.webdriver.common.by import By
 from sampyl.core.element import Element, join
 from sampyl.core.mixins import *
 
-__all__ = ['Button', 'Div', 'Form', 'Image', 'InputCheckbox', 'InputRadio', 'InputText', 'Link', 'MultiSelect',
-           'Select', 'Text']
+__all__ = ['Button', 'Div', 'Image', 'InputCheckbox', 'InputRadio', 'InputText', 'Link', 'MultiSelect', 'Select',
+           'Text']
 
 
 class Button(Element, ClickMixin, TextMixin):
@@ -25,15 +25,16 @@ class Button(Element, ClickMixin, TextMixin):
 
         .. code-block:: html
 
-            <button id="someClassId" class="someClass" on-click="javascript.function" >Click Me</button>
+            <button id="someClassId" class="someClass" on-click="javascript.function()">Click Me</button>
 
 
         If the user wants to make the code above recognizable to the testing framework, they would add the attribute
-        "data-qa-id" with a unique value.
+        "data-qa-id" with a unique value as well as "data-qa-model" with a type.
 
         .. code-block:: html
 
-            <button data-qa-id="some-identifier" id="someClassId" class="someClass" on-click="javascript.function">
+            <button data-qa-id="some.identifier" data-qa-model="button" id="someClassId" class="someClass"
+            on-click="javascript.function()">
                 Click Me
             </button>
 
@@ -42,18 +43,15 @@ class Button(Element, ClickMixin, TextMixin):
 
         .. code-block:: python
 
-            import selenium
-            from selenium.webdriver.common.by import By
-            from selenium_data_attributes import structures
+            from selenium.webdriver import Chrome
+            from sampyl import App
 
-            driver = webdriver.FireFox()
-            driver.get('http://www.some-url.com')
-
-            locator = (By.XPATH, "//button[@data-qa-id="some-identifier"]")
-            b = structures.Button(driver, *locator)
+            wd = webdriver.Chrome('/path/to/chromedriver')
+            app = App(wd, "http://someurl.com/path")
 
             # Example usage
-            b.click()
+            app.page.some.identifier.click()
+
     """
 
     pass
@@ -75,11 +73,11 @@ class Div(Element):
 
 
         If the user wants to make the code above recognizable to the testing framework, they would add the attribute
-        "data-qa-id" with a unique value.
+        "data-qa-id" with a unique value as well as "data-qa-model" with a type.
 
         .. code-block:: html
 
-            <div data-qa-id="some-identifier" id="someClassId" class="someClass">
+            <div data-qa-id="some.identifier" data-qa-model="div" id="someClassId" class="someClass">
                 ...
             </div>
 
@@ -88,33 +86,18 @@ class Div(Element):
 
         .. code-block:: python
 
-            import selenium
-            from selenium.webdriver.common.by import By
-            from selenium_data_attributes import structures
+            from selenium.webdriver import Chrome
+            from sampyl import App
 
-            driver = webdriver.FireFox()
-            driver.get('http://www.some-url.com')
+            wd = webdriver.Chrome('/path/to/chromedriver')
+            app = App(wd, "http://someurl.com/path")
 
-            locator = (By.XPATH, "//button[@data-qa-id="some-identifier"]")
-            d = structures.Button(driver, *locator)
+            # Returns True
+            app.page.some.identifier.is_displayed()
 
     """
 
     pass
-
-
-class Form(Element):
-
-    FIELD_TYPES = ('button', 'input', 'select')
-
-    def fields(self):
-
-        xpath = '/descendant-or-self::*[{0}]'.format(' or '.join(['contains(@data-qa-model, "{0}")'.format(_type)
-                                                                  for _type in self.FIELD_TYPES]))
-
-        elements = self.driver.find_elements(*join(self.search_term, (By.XPATH, xpath)))
-
-        return [element.get_attribute('data-qa-id') for element in elements]
 
 
 class Image(Element):
@@ -131,29 +114,27 @@ class Image(Element):
 
 
         If the user wants to make the code above recognizable to the testing framework, they would add the attribute
-        "data-qa-id" with a unique value.
+        "data-qa-id" with a unique value as well as "data-qa-model" with a type.
 
         .. code-block:: html
 
-            <img data-qa-id="some-identifier" id="someClassId" class="someClass" />
+            <img data-qa-id="some.identifier" data-qa-model="image" id="someClassId" class="someClass"
+            src="http://someSource.net/image.png" />
 
 
         An example on how to interact with the element:
 
         .. code-block:: python
 
-            import selenium
-            from selenium.webdriver.common.by import By
-            from selenium_data_attributes import structures
+            from selenium.webdriver import Chrome
+            from sampyl import App
 
-            driver = webdriver.FireFox()
-            driver.get('http://www.some-url.com')
+            wd = webdriver.Chrome('/path/to/chromedriver')
+            app = App(wd, "http://someurl.com/path")
 
-            locator = (By.XPATH, "//img[@data-qa-id="some-identifier"]")
-            i = structures.Image(driver, *locator)
+            # Returns "http://someSource.net/image.png"
+            app.page.some.identifier.source()
 
-            # Returns tag attribute 'src'
-            i.source()
     """
 
     def source(self):
@@ -180,29 +161,26 @@ class InputCheckbox(Element, SelectiveMixin):
 
 
         If the user wants to make the code above recognizable to the testing framework, they would add the attribute
-        "data-qa-id" with a unique value.
+        "data-qa-id" with a unique value as well as "data-qa-model" with a type.
 
         .. code-block:: html
 
-            <input data-qa-id="some-identifier" id="someClassId" type="checkbox" class="someClass">
+            <input data-qa-id="some.identifier" data-qa-model="inputcheckbox" id="someClassId" type="checkbox"
+            class="someClass">
 
 
         An example on how to interact with the element:
 
         .. code-block:: python
 
-            import selenium
-            from selenium.webdriver.common.by import By
-            from selenium_data_attributes import structures
+            from selenium.webdriver import Chrome
+            from sampyl import App
 
-            driver = webdriver.FireFox()
-            driver.get('http://www.some-url.com')
+            wd = webdriver.Chrome('/path/to/chromedriver')
+            app = App(wd, "http://someurl.com/path")
 
-            locator = (By.XPATH, "//input[@data-qa-id="some-identifier"]")
-            c = structures.InputCheckbox(driver, *locator)
+            app.page.some.identifier.select()
 
-            # Example usage
-            c.select()
     """
 
     def label(self):
@@ -231,28 +209,26 @@ class InputRadio(InputCheckbox, SelectiveMixin):
 
 
         If the user wants to make the code above recognizable to the testing framework, they would add the attribute
-        "data-qa-id" with a unique value.
+        "data-qa-id" with a unique value as well as "data-qa-model" with a type.
 
         .. code-block:: html
 
-            <input data-qa-id="some-identifier" id="someClassId" type="radio" class="someClass">
+            <input data-qa-id="some.identifier" data-qa-model="inputradio" id="someClassId" type="radio"
+            class="someClass">
 
 
         An example on how to interact with the element:
 
         .. code-block:: python
 
-            import selenium
-            from selenium.webdriver.common.by import By
-            from selenium_data_attributes import structures
+            from selenium.webdriver import Chrome
+            from sampyl import App
 
-            driver = webdriver.FireFox()
-            driver.get('http://www.some-url.com')
+            wd = webdriver.Chrome('/path/to/chromedriver')
+            app = App(wd, "http://someurl.com/path")
 
-            r = structures.InputRadio(driver, "//input[@data-qa-id="some-identifier"]")
+            app.page.some.identifier.select()
 
-            # Input Radio inherits from InputCheckbox
-            r.select()
     """
 
     pass
@@ -272,29 +248,26 @@ class InputText(Element, InputMixin, ClickMixin):
 
 
         If the user wants to make the code above recognizable to the testing framework, they would add the attribute
-        "data-qa-id" with a unique value.
+        "data-qa-id" with a unique value as well as "data-qa-model" with a type.
 
         .. code-block:: html
 
-            <input data-qa-id="some-identifier" id="someClassId" type="text" class="someClass">
+            <input data-qa-id="some.identifier" data-qa-model="inputtext" id="someClassId" type="text"
+            class="someClass">
 
 
         An example on how to interact with the element:
 
         .. code-block:: python
 
-            import selenium
-            from selenium.webdriver.common.by import By
-            from selenium_data_attributes import structures
+            from selenium.webdriver import Chrome
+            from sampyl import App
 
-            driver = webdriver.FireFox()
-            driver.get('http://www.some-url.com')
+            wd = webdriver.Chrome('/path/to/chromedriver')
+            app = App(wd, "http://someurl.com/path")
 
-            locator = (By.XPATH, "//input[@data-qa-id="some-identifier"]")
-            t = structures.InputText(driver, *locator)
+            app.page.some.identifier.input('Hello World')
 
-            # Example usage
-            t.input('Hello World')
     """
 
     def label(self):
@@ -323,72 +296,148 @@ class Link(Button, ClickMixin, TextMixin):
 
 
         If the user wants to make the code above recognizable to the testing framework, they would add the attribute
-        "data-qa-id" with a unique value.
+        "data-qa-id" with a unique value as well as "data-qa-model" with a type.
 
         .. code-block:: html
 
-            <a data-qa-id="some-identifier" id="someClassId" class="someClass" href="/some/link/path">Click Me</a>
+            <a data-qa-id="some.identifier" id="someClassId" class="someClass" href="/some/link/path">Click Me</a>
 
 
         An example on how to interact with the element:
 
         .. code-block:: python
 
-            import selenium
-            from selenium.webdriver.common.by import By
-            from selenium_data_attributes import structures
+            from selenium.webdriver import Chrome
+            from sampyl import App
 
-            driver = webdriver.FireFox()
-            driver.get('http://www.some-url.com')
+            wd = webdriver.Chrome('/path/to/chromedriver')
+            app = App(wd, "http://someurl.com/path")
 
-            locator = (By.XPATH, "//a[@data-qa-id="some-identifier"]")
-            l = structures.Link(driver, *locator)
+            app.page.some.identifier.click()
 
-            # Inherits from Button
-            l.click()
     """
 
     pass
 
 
 class MultiSelect(Element):
+    """The MultiSelect implementation
+
+        **Example Use:**
+
+
+        Let's take the following example:
+
+        .. code-block:: html
+
+            <div id="someClassId" class="someClass" isteven-multi-select input-model="some.model"
+            output-model="format.model" helper-elements="filter all none">
+                ...
+            </div>
+
+
+        If the user wants to make the code above recognizable to the testing framework, they would add the attribute
+        "data-qa-id" with a unique value as well as "data-qa-model" with a type.
+
+        .. code-block:: html
+
+            <div data-qa-id="some.identifier" data-qa-model="multiselect" id="someClassId" class="someClass"
+            isteven-multi-select input-model="some.model" output-model="format.model" helper-elements="filter all none">
+                ...
+            </div>
+
+
+        An example on how to interact with the element:
+
+        .. code-block:: python
+
+            from selenium.webdriver import Chrome
+            from sampyl import App
+
+            wd = webdriver.Chrome('/path/to/chromedriver')
+            app = App(wd, "http://someurl.com/path")
+
+            # Opens the iSteven dropdown
+            app.page.some.identifier.expand()
+
+    """
 
     @property
     def _container(self):
+        """iSteven dropdown container
+
+        :return:
+        """
+
         return Div(self.driver, *join(self.search_term,
                                       (By.XPATH, '/descendant-or-self::div[contains(@class, "checkboxLayer")]')))
 
     @property
     def _toggle(self):
+        """Show/hide button
+
+        :return:
+        """
+
         return Button(self.driver, *join(self.search_term,
                                          (By.XPATH, '/descendant-or-self::button[contains(@ng-click, "toggle")]')))
 
     @property
     def _select_all(self):
+        """Select all button
+
+        :return:
+        """
+
         return Button(self.driver, *join(self.search_term,
                                          (By.XPATH, '/descendant-or-self::button[contains(@ng-click, "all")]')))
 
     @property
     def _select_none(self):
+        """Select none button
+
+        :return:
+        """
+
         return Button(self.driver, *join(self.search_term,
                                          (By.XPATH, '/descendant-or-self::button[contains(@ng-click, "none")]')))
 
     @property
     def _reset(self):
+        """Reset button
+
+        :return:
+        """
+
         return Button(self.driver, *join(self.search_term,
                                          (By.XPATH, '/descendant-or-self::button[contains(@ng-click, "reset")]')))
 
     @property
     def _search(self):
+        """Search field
+
+        :return:
+        """
+
         return InputText(self.driver, *join(self.search_term,
                                             (By.XPATH, '/descendant-or-self::input[contains(@ng-click, "filter")]')))
 
     @property
     def _clear(self):
+        """Clear search button
+
+        :return:
+        """
+
         return Button(self.driver, *join(self.search_term,
                                          (By.XPATH, '/descendant-or-self::button[contains(@ng-click, "clear")]')))
 
     def _get_index(self, idx):
+        """Return item at index 'i'
+
+        :param str idx: Index
+        :return:
+        """
 
         if isinstance(idx, int) or isinstance(idx, basestring):
 
@@ -407,6 +456,11 @@ class MultiSelect(Element):
                                                             '"filteredModel")][{}]'.format(idx))))
 
     def _get_text(self, text):
+        """Return selection that contains text criteria
+
+        :param str text: Text criteria
+        :return:
+        """
 
         if isinstance(text, basestring):
 
@@ -415,36 +469,71 @@ class MultiSelect(Element):
                                                         '[contains(@ng-repeat, "filteredModel")]'.format(text))))
 
     def expand(self):
+        """Show iSteven dropdown
+
+        :return:
+        """
 
         if not self._container.is_displayed():
             self._toggle.click()
 
     def collapse(self):
+        """Hide iSteven dropdown
+
+        :return:
+        """
 
         if self._container.is_displayed():
             self._toggle.click()
 
     def select_all(self):
+        """Select all possible selections
+
+        :return:
+        """
 
         self._select_all.click()
 
     def select_none(self):
+        """Deselect all selections
+
+        :return:
+        """
 
         self._select_none.click()
 
     def reset(self):
+        """Reset selection to default state
+
+        :return:
+        """
 
         self._reset.click()
 
     def search(self, value, clear=True):
+        """Filter selections to those matching search criteria
+
+        :param str value: Search criteria
+        :param bool clear: Clear previous search criteria
+        :return:
+        """
 
         self._search.input(value, clear)
 
     def clear_search(self):
+        """Click clear search button
+
+        :return:
+        """
 
         self._clear.click()
 
     def select_by_index(self, index):
+        """Select option at index 'i'
+
+        :param str index: Index
+        :return:
+        """
 
         self.expand()
 
@@ -455,6 +544,11 @@ class MultiSelect(Element):
                 option.click()
 
     def select_by_text(self, text):
+        """Select option that matches text criteria
+
+        :param str text: Text criteria
+        :return:
+        """
 
         self.expand()
 
@@ -464,6 +558,11 @@ class MultiSelect(Element):
             option.click()
 
     def deselect_by_index(self, index):
+        """Deselect option at index 'i'
+
+        :param str index: Index
+        :return:
+        """
 
         self.expand()
 
@@ -474,6 +573,11 @@ class MultiSelect(Element):
                 option.click()
 
     def deselect_by_text(self, text):
+        """Deselect option that matches text criteria
+
+        :param str text: Text criteria
+        :return:
+        """
 
         self.expand()
 
@@ -483,6 +587,11 @@ class MultiSelect(Element):
             option.click()
 
     def options(self):
+        """Return all available options
+
+        :return: List of options
+        :rtype: list
+        """
 
         search_term = join(self.search_term,  (By.XPATH, '/descendant-or-self::div[contains(@ng-repeat, '
                                                          '"filteredModel")]//label'))
@@ -491,6 +600,11 @@ class MultiSelect(Element):
                 for element in self.driver.find_elements(*search_term)]
 
     def selected_options(self):
+        """Return all selected options
+
+        :return: List of selected options
+        :rtype: list
+        """
 
         search_term = join(self.search_term,  (By.XPATH, '/descendant-or-self::div[contains(@ng-repeat, '
                                                          '"filteredModel") and contains(@class, "selected")]//label'))
@@ -518,11 +632,11 @@ class Select(Element, SelectMixin):
 
 
         If the user wants to make the code above recognizable to the testing framework, they would add the attribute
-        "data-qa-id" with a unique value.
+        "data-qa-id" with a unique value as well as "data-qa-model" with a type.
 
         .. code-block:: html
 
-            <select data-qa-id="some-identifier" id="someClassId" class="someClass">
+            <select data-qa-id="some.identifier" data-qa-model="select" id="someClassId" class="someClass">
                 <option value="1">Value 1</option>
                 <option value="2">Value 2</option>
                 <option value="3">Value 3</option>
@@ -534,18 +648,14 @@ class Select(Element, SelectMixin):
 
         .. code-block:: python
 
-            import selenium
-            from selenium.webdriver.common.by import By
-            from selenium_data_attributes import structures
+            from selenium.webdriver import Chrome
+            from sampyl import App
 
-            driver = webdriver.FireFox()
-            driver.get('http://www.some-url.com')
-
-            locator = (By.XPATH, "//input[@data-qa-id="some-identifier"]")
-            s = structures.Select(driver, *locator)
+            wd = webdriver.Chrome('/path/to/chromedriver')
+            app = App(wd, "http://someurl.com/path")
 
             # Example usage. Returns ['Value 1', 'Value 2', 'Value 3', 'Value 4']
-            s.options()
+            app.page.some.identifier.options()
     """
 
     pass
@@ -571,7 +681,7 @@ class Text(Element, TextMixin, ClickMixin):
 
         .. code-block:: html
 
-            <p data-qa-id="some-identifier" id="someClassId" class="someClass">
+            <p data-qa-id="some.identifier" data-qa-model="text" id="someClassId" class="someClass">
                 ...
             </p>
 
@@ -580,18 +690,15 @@ class Text(Element, TextMixin, ClickMixin):
 
         .. code-block:: python
 
-            import selenium
-            from selenium.webdriver.common.by import By
-            from selenium_data_attributes import structures
+            from selenium.webdriver import Chrome
+            from sampyl import App
 
-            driver = webdriver.FireFox()
-            driver.get('http://www.some-url.com')
-
-            locator = (By.XPATH, "//p[@data-qa-id="some-identifier"]")
-            d = structures.Text(driver, *locator)
+            wd = webdriver.Chrome('/path/to/chromedriver')
+            app = App(wd, "http://someurl.com/path")
 
             # Prints text inside text elements
-            print d
+            print app.page.some.identifier
+
     """
 
     pass
