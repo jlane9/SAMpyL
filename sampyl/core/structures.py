@@ -476,6 +476,7 @@ class MultiSelect(Element):
 
         if not self._container.is_displayed():
             self._toggle.click()
+            self._container.wait_until_present()
 
     def collapse(self):
         """Hide iSteven dropdown
@@ -485,6 +486,7 @@ class MultiSelect(Element):
 
         if self._container.is_displayed():
             self._toggle.click()
+            self._container.wait_until_disappears()
 
     def select_all(self):
         """Select all possible selections
@@ -540,7 +542,7 @@ class MultiSelect(Element):
         option = self._get_index(index)
 
         if option:
-            if 'selected' not in option.cls:
+            if 'selected' not in option._class:
                 option.click()
 
     def select_by_text(self, text):
@@ -569,7 +571,7 @@ class MultiSelect(Element):
         option = self._get_index(index)
 
         if option:
-            if 'selected' in option.cls:
+            if 'selected' in option._class:
                 option.click()
 
     def deselect_by_text(self, text):
