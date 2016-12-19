@@ -47,8 +47,8 @@ class App(SeleniumObject):
     """The App implementation
     """
 
-    scheme = ''
-    hostname = ''
+    scheme = ""
+    hostname = ""
 
     def __init__(self, web_driver, url=None):
 

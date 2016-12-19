@@ -119,79 +119,7 @@ class SeleniumObject(object):
 class Element(SeleniumObject):
     """The Element implementation
 
-    An abstract class for interacting with web elements. Example use below:
-
-    Example file structure:
-
-    my_project
-        - __init__.py
-        - main.py
-        - my_web_page
-            - __init__.py
-            - fixtures.py
-            - locators.py
-            - page.py
-
-
-    The following example demonstrates a user creating a custom fixture (SomeElement) for an element on their web page,
-    using a locator class to store the selenium selector and implement a web page view to interact with that web page
-    and its elements:
-
-    fixtures.py
-
-    .. code-block:: python
-
-        from selenium_data_attributes.element import Element
-        from selenium_data_attributes.mixins import ClickMixin
-
-        class SomeElement(Element, ClickMixin):
-
-            pass
-
-
-    locators.py
-
-    .. code-block:: python
-
-        from selenium_data_attributes.locators import Locators
-        from selenium.webdriver.common.by import By
-
-        class MyWebLocators(Locators):
-
-            EXAMPLE_BUTTON = (By.XPATH, '//some//path[@id="id_example"])
-
-
-    page.py
-
-    .. code-block:: python
-
-        from selenium_data_attributes.page import Page
-
-        from my_project.my_web_page.fixtures import SomeElement
-        from my_project.my_web_page.locators import MyWebLocators
-
-        class MyWebPage(Page):
-
-            def __init__(self, web_driver):
-
-                self.driver = web_driver
-
-                self.example_button = SomeElement(driver, *MyWebLocators.EXAMPLE_BUTTON)
-
-
-    main.py
-
-    .. code-block:: python
-
-        from my_project.my_web_page.page import MyWebPage
-        from selenium import webdriver
-
-        # Instantiate webdriver
-        wd = webdriver.Firefox()
-
-        web_page = MyWebPage(wd)
-
-        web_page.example_button.click()
+    An abstract class for interacting with web elements.
 
     """
 
@@ -245,8 +173,8 @@ class Element(SeleniumObject):
 
         if self.exists() and isinstance(attribute, basestring):
 
-            if keyword.iskeyword(attribute):
-                attribute = '_' + attribute
+            if keyword.iskeyword(attribute.replace('_', '')):
+                attribute = attribute.replace('_', '')
 
             else:
                 attribute = str(attribute).replace('_', '-')
@@ -265,6 +193,15 @@ class Element(SeleniumObject):
 
         return self.outerHTML if self.exists() else ''
 
+    def angular_element(self):
+        """Returns the angular scope for the element
+
+        :return:
+        """
+
+        if self.exists():
+            return self.driver.execute_script('return angular.element(arguments[0]).scope()', self.element())
+
     def blur(self):
         """Simulate moving the cursor out of focus of this element.
 
@@ -277,8 +214,7 @@ class Element(SeleniumObject):
     def css_property(self, prop):
         """Return the value of a CSS property for the element
 
-        .. warning::
-            value_of_css_property does not work with Firefox
+        .. warning:: value_of_css_property does not work with Firefox
 
         :param str prop: CSS Property
         :return: Value of a CSS property
