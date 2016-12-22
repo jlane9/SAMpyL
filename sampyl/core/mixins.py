@@ -257,6 +257,8 @@ class SelectMixin(ElementMixin):
             except NoSuchElementException:
                 pass
 
+        return False
+
     def deselect_by_value(self, option):
         """Deselect option by option value
 
@@ -325,9 +327,7 @@ class SelectMixin(ElementMixin):
         options = []
 
         if select:
-
-            for option in select.all_selected_options:
-                options.append(option.text.encode('ascii', 'ignore'))
+            options = [option.text.encode('ascii', 'ignore') for option in select.all_selected_options]
 
         return options
 

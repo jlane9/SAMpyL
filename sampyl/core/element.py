@@ -193,14 +193,16 @@ class Element(SeleniumObject):
 
         return self.outerHTML if self.exists() else ''
 
-    def angular_element(self):
+    def angular_element(self, path):
         """Returns the angular scope for the element
 
+        :param path:
         :return:
         """
 
         if self.exists():
-            return self.driver.execute_script('return angular.element(arguments[0]).scope()', self.element())
+            return self.driver.execute_script('return angular.element(arguments[0]).scope().{}'.format(str(path)),
+                                              self.element())
 
     def blur(self):
         """Simulate moving the cursor out of focus of this element.

@@ -450,7 +450,7 @@ class MultiSelect(Element):
                 else:
                     raise TypeError('Error: Index must be of type int')
 
-            if idx in range(1, len(self.options())):
+            if idx in range(0, len(self.options())):
                 return Button(self.driver, *join(self.search_term,
                                                  (By.XPATH, '/descendant-or-self::div[contains(@ng-repeat, '
                                                             '"filteredModel")][{}]'.format(idx))))
