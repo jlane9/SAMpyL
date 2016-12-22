@@ -151,6 +151,29 @@ class App(SeleniumObject):
 
         return False
 
+    def wait_until_appears(self, _id, timeout=30):
+        """Wait until the element appears
+
+        :param str _id: Element id to wait for
+        :param int timeout: Wait timeout in seconds
+        :return: True, if the wait does not timeout
+        :rtype: bool
+        """
+
+        search = '/descendant-or-self::*[contains(@data-qa-id, "{0}")]'
+
+        wait = WebDriverWait(self.driver, timeout) if isinstance(timeout, int) else WebDriverWait(self.driver, 30)
+
+        try:
+
+            wait.until(ec.visibility_of_element_located((By.XPATH, search.format(str(_id)))))
+            return True
+
+        except TimeoutException:
+            pass
+
+        return False
+
     def wait_until_disappears(self, _id, timeout=30):
         """Wait until the element disappears
 

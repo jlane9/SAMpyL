@@ -9,6 +9,7 @@ import keyword
 from lxml import html
 from lxml.cssselect import CSSSelector, SelectorError
 from sampyl.core.shortcuts import encode_ascii
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -33,7 +34,7 @@ def normalize(by, path, *args, **kwargs):
         pass
 
     if by == 'class name':
-        return By.XPATH, '/descendant-or-self::[contains(@class, "%s")]' % str(path)
+        return By.XPATH, '/descendant-or-self::*[contains(@class, "%s")]' % str(path)
 
     elif by == 'css selector':
 
@@ -48,7 +49,7 @@ def normalize(by, path, *args, **kwargs):
             return path.search_term
 
     elif by == 'id':
-        return By.XPATH, '/descendant-or-self::[@id="%s"]' % str(path)
+        return By.XPATH, '/descendant-or-self::*[@id="%s"]' % str(path)
 
     elif by == 'link text':
         return By.XPATH, '/descendant-or-self::*[contains("input a button", name()) ' \
@@ -201,8 +202,14 @@ class Element(SeleniumObject):
         """
 
         if self.exists():
-            return self.driver.execute_script('return angular.element(arguments[0]).scope().{}'.format(str(path)),
-                                              self.element())
+
+            try:
+
+                return self.driver.execute_script('return angular.element(arguments[0]).scope().{}'.format(str(path)),
+                                                  self.element())
+
+            except (TypeError, WebDriverException):
+                pass
 
     def blur(self):
         """Simulate moving the cursor out of focus of this element.

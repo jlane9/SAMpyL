@@ -183,6 +183,7 @@ class InputCheckbox(Element, SelectiveMixin):
 
     """
 
+    @property
     def label(self):
         """Returns the label for the input item
 
@@ -191,7 +192,8 @@ class InputCheckbox(Element, SelectiveMixin):
         """
 
         if self.exists():
-            return Text(self.driver, By.XPATH, '//label[@for="{0}"]'.format(str(self.id))).visible_text() \
+            return Text(self.driver, By.XPATH,
+                        '/descendant-or-self::label[@for="{0}"]'.format(str(self.id))).visible_text() \
                 if len(self.id) > 0 else ''
 
 
@@ -270,6 +272,7 @@ class InputText(Element, InputMixin, ClickMixin):
 
     """
 
+    @property
     def label(self):
         """Returns the label for the input item
 
@@ -278,7 +281,8 @@ class InputText(Element, InputMixin, ClickMixin):
         """
 
         if self.exists():
-            return Text(self.driver, By.XPATH, '//label[@for="{0}"]'.format(str(self.id))).visible_text() \
+            return Text(self.driver, By.XPATH,
+                        '/descendant-or-self::label[@for="{0}"]'.format(str(self.id))).visible_text() \
                 if len(self.id) > 0 else ''
 
 
@@ -476,7 +480,7 @@ class MultiSelect(Element):
 
         if not self._container.is_displayed():
             self._toggle.click()
-            self._container.wait_until_present()
+            self._container.wait_until_appears()
 
     def collapse(self):
         """Hide iSteven dropdown
@@ -494,6 +498,7 @@ class MultiSelect(Element):
         :return:
         """
 
+        self.expand()
         self._select_all.click()
 
     def select_none(self):
@@ -502,6 +507,7 @@ class MultiSelect(Element):
         :return:
         """
 
+        self.expand()
         self._select_none.click()
 
     def reset(self):
@@ -510,6 +516,7 @@ class MultiSelect(Element):
         :return:
         """
 
+        self.expand()
         self._reset.click()
 
     def search(self, value, clear=True):
@@ -520,6 +527,7 @@ class MultiSelect(Element):
         :return:
         """
 
+        self.expand()
         self._search.input(value, clear)
 
     def clear_search(self):
@@ -528,6 +536,7 @@ class MultiSelect(Element):
         :return:
         """
 
+        self.expand()
         self._clear.click()
 
     def select_by_index(self, index):
