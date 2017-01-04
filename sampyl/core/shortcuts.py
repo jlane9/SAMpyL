@@ -5,6 +5,7 @@
 
 """
 
+# pylint: disable=line-too-long
 __all__ = ['encode_ascii']
 
 
@@ -16,8 +17,19 @@ def encode_ascii(clean=False):
     """
 
     def encode_ascii_decorator(func):
+        """
+
+        :param func:
+        :return:
+        """
 
         def func_wrapper(*args, **kwargs):
+            """
+
+            :param args:
+            :param kwargs:
+            :return:
+            """
 
             text = func(*args, **kwargs)
 

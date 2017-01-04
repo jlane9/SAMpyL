@@ -5,9 +5,9 @@
 
 """
 
-import element
-import mixins
-import shortcuts
-import structures
+from sampyl.core import element
+from sampyl.core import mixins
+from sampyl.core import shortcuts
+from sampyl.core import structures
 
 __all__ = ['element', 'mixins', 'shortcuts', 'structures']

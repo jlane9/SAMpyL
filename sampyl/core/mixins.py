@@ -5,7 +5,7 @@
 
 """
 
-
+# pylint: disable=line-too-long
 from sampyl.core.shortcuts import encode_ascii
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.remote.webdriver import WebDriver

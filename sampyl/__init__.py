@@ -6,8 +6,7 @@
 
 """
 
-import core
-from app import *
+from sampyl.app import App, Node
 
 __author__ = "John Lane"
 __copyright__ = "Copyright 2016, FanThreeSixty"
@@ -18,4 +17,4 @@ __maintainer__ = "John Lane"
 __email__ = "jlane@fanthreesixty.com"
 __status__ = "Beta"
 
-__all__ = ['core', 'App', 'Node']
+__all__ = ['App', 'Node']
