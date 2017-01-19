@@ -5,14 +5,15 @@
 
 """
 
+# pylint: disable=line-too-long
 import inspect
 import sys
 from selenium.webdriver.common.by import By
 from sampyl.core.element import Element, join
-from sampyl.core.mixins import *
+from sampyl.core.mixins import ClickMixin, InputMixin, SelectMixin, SelectiveMixin, TextMixin
 
-__all__ = ['Button', 'Div', 'Image', 'InputCheckbox', 'InputRadio', 'InputText', 'Link', 'MultiSelect', 'Select',
-           'Text']
+__all__ = ['Button', 'Div', 'Image', 'InputCheckbox', 'InputRadio', 'InputText', 'Link',
+           'MultiSelect', 'Select', 'Text']
 
 
 class Button(Element, ClickMixin, TextMixin):
@@ -25,16 +26,18 @@ class Button(Element, ClickMixin, TextMixin):
 
         .. code-block:: html
 
-            <button id="someClassId" class="someClass" on-click="javascript.function()">Click Me</button>
+            <button id="someClassId" class="someClass"
+            on-click="javascript.function()">Click Me</button>
 
 
-        If the user wants to make the code above recognizable to the testing framework, they would add the attribute
-        "data-qa-id" with a unique value as well as "data-qa-model" with a type.
+        If the user wants to make the code above recognizable to the testing framework, they
+        would add the attribute "data-qa-id" with a unique value as well as "data-qa-model"
+        with a type.
 
         .. code-block:: html
 
-            <button data-qa-id="some.identifier" data-qa-model="button" id="someClassId" class="someClass"
-            on-click="javascript.function()">
+            <button data-qa-id="some.identifier" data-qa-model="button" id="someClassId"
+            class="someClass" on-click="javascript.function()">
                 Click Me
             </button>
 
@@ -72,12 +75,14 @@ class Div(Element):
             </div>
 
 
-        If the user wants to make the code above recognizable to the testing framework, they would add the attribute
-        "data-qa-id" with a unique value as well as "data-qa-model" with a type.
+        If the user wants to make the code above recognizable to the testing framework, they
+        would add the attribute "data-qa-id" with a unique value as well as "data-qa-model"
+        with a type.
 
         .. code-block:: html
 
-            <div data-qa-id="some.identifier" data-qa-model="div" id="someClassId" class="someClass">
+            <div data-qa-id="some.identifier" data-qa-model="div" id="someClassId"
+            class="someClass">
                 ...
             </div>
 
@@ -113,13 +118,14 @@ class Image(Element):
             <img id="someClassId" class="someClass" />
 
 
-        If the user wants to make the code above recognizable to the testing framework, they would add the attribute
-        "data-qa-id" with a unique value as well as "data-qa-model" with a type.
+        If the user wants to make the code above recognizable to the testing framework, they
+        would add the attribute "data-qa-id" with a unique value as well as "data-qa-model"
+        with a type.
 
         .. code-block:: html
 
-            <img data-qa-id="some.identifier" data-qa-model="image" id="someClassId" class="someClass"
-            src="http://someSource.net/image.png" />
+            <img data-qa-id="some.identifier" data-qa-model="image" id="someClassId"
+            class="someClass" src="http://someSource.net/image.png" />
 
 
         An example on how to interact with the element:
@@ -160,13 +166,14 @@ class InputCheckbox(Element, SelectiveMixin):
             <input id="someClassId" type="checkbox" class="someClass">
 
 
-        If the user wants to make the code above recognizable to the testing framework, they would add the attribute
-        "data-qa-id" with a unique value as well as "data-qa-model" with a type.
+        If the user wants to make the code above recognizable to the testing framework, they
+        would add the attribute "data-qa-id" with a unique value as well as "data-qa-model"
+        with a type.
 
         .. code-block:: html
 
-            <input data-qa-id="some.identifier" data-qa-model="inputcheckbox" id="someClassId" type="checkbox"
-            class="someClass">
+            <input data-qa-id="some.identifier" data-qa-model="inputcheckbox"
+            id="someClassId" type="checkbox" class="someClass">
 
 
         An example on how to interact with the element:
@@ -210,13 +217,14 @@ class InputRadio(InputCheckbox, SelectiveMixin):
             <input id="someClassId" type="radio" class="someClass">
 
 
-        If the user wants to make the code above recognizable to the testing framework, they would add the attribute
-        "data-qa-id" with a unique value as well as "data-qa-model" with a type.
+        If the user wants to make the code above recognizable to the testing framework, they
+        would add the attribute "data-qa-id" with a unique value as well as "data-qa-model"
+        with a type.
 
         .. code-block:: html
 
-            <input data-qa-id="some.identifier" data-qa-model="inputradio" id="someClassId" type="radio"
-            class="someClass">
+            <input data-qa-id="some.identifier" data-qa-model="inputradio" id="someClassId"
+            type="radio" class="someClass">
 
 
         An example on how to interact with the element:
@@ -299,12 +307,14 @@ class Link(Button, ClickMixin, TextMixin):
             <a id="someClassId" class="someClass" href="/some/link/path">Click Me</a>
 
 
-        If the user wants to make the code above recognizable to the testing framework, they would add the attribute
-        "data-qa-id" with a unique value as well as "data-qa-model" with a type.
+        If the user wants to make the code above recognizable to the testing framework, they
+        would add the attribute "data-qa-id" with a unique value as well as "data-qa-model"
+        with a type.
 
         .. code-block:: html
 
-            <a data-qa-id="some.identifier" id="someClassId" class="someClass" href="/some/link/path">Click Me</a>
+            <a data-qa-id="some.identifier" id="someClassId" class="someClass"
+            href="/some/link/path">Click Me</a>
 
 
         An example on how to interact with the element:
@@ -373,8 +383,9 @@ class MultiSelect(Element):
         :return:
         """
 
-        return Div(self.driver, *join(self.search_term,
-                                      (By.XPATH, '/descendant-or-self::div[contains(@class, "checkboxLayer")]')))
+        xpath = '/descendant-or-self::div[contains(@class, "checkboxLayer")]'
+
+        return Div(self.driver, *join(self.search_term, (By.XPATH, xpath)))
 
     @property
     def _toggle(self):
@@ -383,8 +394,9 @@ class MultiSelect(Element):
         :return:
         """
 
-        return Button(self.driver, *join(self.search_term,
-                                         (By.XPATH, '/descendant-or-self::button[contains(@ng-click, "toggle")]')))
+        xpath = '/descendant-or-self::button[contains(@ng-click, "toggle")]'
+
+        return Button(self.driver, *join(self.search_term, (By.XPATH, xpath)))
 
     @property
     def _select_all(self):
@@ -393,8 +405,9 @@ class MultiSelect(Element):
         :return:
         """
 
-        return Button(self.driver, *join(self.search_term,
-                                         (By.XPATH, '/descendant-or-self::button[contains(@ng-click, "all")]')))
+        xpath = '/descendant-or-self::button[contains(@ng-click, "all")]'
+
+        return Button(self.driver, *join(self.search_term, (By.XPATH, xpath)))
 
     @property
     def _select_none(self):
@@ -403,8 +416,9 @@ class MultiSelect(Element):
         :return:
         """
 
-        return Button(self.driver, *join(self.search_term,
-                                         (By.XPATH, '/descendant-or-self::button[contains(@ng-click, "none")]')))
+        xpath = '/descendant-or-self::button[contains(@ng-click, "none")]'
+
+        return Button(self.driver, *join(self.search_term, (By.XPATH, xpath)))
 
     @property
     def _reset(self):
@@ -413,18 +427,20 @@ class MultiSelect(Element):
         :return:
         """
 
-        return Button(self.driver, *join(self.search_term,
-                                         (By.XPATH, '/descendant-or-self::button[contains(@ng-click, "reset")]')))
+        xpath = '/descendant-or-self::button[contains(@ng-click, "reset")]'
+
+        return Button(self.driver, *join(self.search_term, (By.XPATH, xpath)))
 
     @property
-    def _search(self):
+    def _filter(self):
         """Search field
 
         :return:
         """
 
-        return InputText(self.driver, *join(self.search_term,
-                                            (By.XPATH, '/descendant-or-self::input[contains(@ng-click, "filter")]')))
+        xpath = '/descendant-or-self::input[contains(@ng-click, "filter")]'
+
+        return InputText(self.driver, *join(self.search_term, (By.XPATH, xpath)))
 
     @property
     def _clear(self):
@@ -433,8 +449,9 @@ class MultiSelect(Element):
         :return:
         """
 
-        return Button(self.driver, *join(self.search_term,
-                                         (By.XPATH, '/descendant-or-self::button[contains(@ng-click, "clear")]')))
+        xpath = '/descendant-or-self::button[contains(@ng-click, "clear")]'
+
+        return Button(self.driver, *join(self.search_term, (By.XPATH, xpath)))
 
     def _get_index(self, idx):
         """Return item at index 'i'
@@ -528,7 +545,7 @@ class MultiSelect(Element):
         """
 
         self.expand()
-        self._search.input(value, clear)
+        self._filter.input(value, clear)
 
     def clear_search(self):
         """Click clear search button
@@ -551,7 +568,7 @@ class MultiSelect(Element):
         option = self._get_index(index)
 
         if option:
-            if 'selected' not in option._class:
+            if 'selected' not in option.class_:
                 option.click()
 
     def select_by_text(self, text):
@@ -580,7 +597,7 @@ class MultiSelect(Element):
         option = self._get_index(index)
 
         if option:
-            if 'selected' in option._class:
+            if 'selected' in option.class_:
                 option.click()
 
     def deselect_by_text(self, text):
@@ -604,8 +621,8 @@ class MultiSelect(Element):
         :rtype: list
         """
 
-        search_term = join(self.search_term,  (By.XPATH, '/descendant-or-self::div[contains(@ng-repeat, '
-                                                         '"filteredModel")]//label'))
+        search_term = join(self.search_term, (By.XPATH, '/descendant-or-self::div[contains(@ng-repeat, '
+                                                        '"filteredModel")]//label'))
 
         return [element.get_attribute('textContent').encode('ascii', 'ignore')
                 for element in self.driver.find_elements(*search_term)]
@@ -617,8 +634,8 @@ class MultiSelect(Element):
         :rtype: list
         """
 
-        search_term = join(self.search_term,  (By.XPATH, '/descendant-or-self::div[contains(@ng-repeat, '
-                                                         '"filteredModel") and contains(@class, "selected")]//label'))
+        search_term = join(self.search_term, (By.XPATH, '/descendant-or-self::div[contains(@ng-repeat, '
+                                                        '"filteredModel") and contains(@class, "selected")]//label'))
 
         return [element.get_attribute('textContent').encode('ascii', 'ignore')
                 for element in self.driver.find_elements(*search_term)]
@@ -642,12 +659,14 @@ class Select(Element, SelectMixin):
             </select>
 
 
-        If the user wants to make the code above recognizable to the testing framework, they would add the attribute
-        "data-qa-id" with a unique value as well as "data-qa-model" with a type.
+        If the user wants to make the code above recognizable to the testing framework, they
+        would add the attribute "data-qa-id" with a unique value as well as "data-qa-model"
+        with a type.
 
         .. code-block:: html
 
-            <select data-qa-id="some.identifier" data-qa-model="select" id="someClassId" class="someClass">
+            <select data-qa-id="some.identifier" data-qa-model="select" id="someClassId"
+            class="someClass">
                 <option value="1">Value 1</option>
                 <option value="2">Value 2</option>
                 <option value="3">Value 3</option>
@@ -687,12 +706,13 @@ class Text(Element, TextMixin, ClickMixin):
             </p>
 
 
-        If the user wants to make the code above recognizable to the testing framework, they would add the attribute
-        "data-qa-id" with a unique value.
+        If the user wants to make the code above recognizable to the testing framework, they
+        would add the attribute "data-qa-id" with a unique value.
 
         .. code-block:: html
 
-            <p data-qa-id="some.identifier" data-qa-model="text" id="someClassId" class="someClass">
+            <p data-qa-id="some.identifier" data-qa-model="text" id="someClassId"
+            class="someClass">
                 ...
             </p>
 

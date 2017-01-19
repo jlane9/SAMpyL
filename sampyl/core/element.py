@@ -5,25 +5,26 @@
 
 """
 
+# pylint: disable=line-too-long
 import keyword
-from lxml import html
 from lxml.cssselect import CSSSelector, SelectorError
 from sampyl.core.shortcuts import encode_ascii
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
-from selenium.common.exceptions import InvalidSelectorException, TimeoutException
+from selenium.common.exceptions import InvalidSelectorException, NoSuchElementException, TimeoutException
 
 __all__ = ['Element']
 
 
-def normalize(by, path, *args, **kwargs):
+def normalize(_by, path, *args, **kwargs):
     """Convert all paths into a xpath selector
 
-    :param str by: Selenium selector
+    :param str _by: Selenium selector
     :param str path: Selector value
     :param args:
     :param kwargs:
@@ -33,43 +34,30 @@ def normalize(by, path, *args, **kwargs):
     if args or kwargs:
         pass
 
-    if by == 'class name':
-        return By.XPATH, '/descendant-or-self::*[contains(@class, "%s")]' % str(path)
+    normalizers = dict([('class name', lambda x: '/descendant-or-self::*[contains(@class, "%s")]' % x),
+                        ('id', lambda x: '/descendant-or-self::*[@id="%s"]' % x),
+                        ('link text', lambda x: '/descendant-or-self::*[contains("input a button", name()) '
+                                                'and normalize-space(text()) = "%s"]' % x),
+                        ('name', lambda x: '/descendant-or-self::*[@name="%s"]' % x),
+                        ('partial link text', lambda x: '/descendant-or-self::*[contains("input a button", name()) '
+                                                        'and contains(normalize-space(text()), "%s")]' % x),
+                        ('tag name', lambda x: '/descendant-or-self::%s' % x),
+                        ('xpath', lambda x: x)])
 
-    elif by == 'css selector':
+    if _by == 'css selector':
 
         try:
             return By.XPATH, '/%s' % CSSSelector(str(path)).path
 
         except SelectorError:
-            pass
+            return By.XPATH, ''
 
-    elif by == 'element':
+    elif _by == 'element':
         if isinstance(path, Element):
             return path.search_term
 
-    elif by == 'id':
-        return By.XPATH, '/descendant-or-self::*[@id="%s"]' % str(path)
-
-    elif by == 'link text':
-        return By.XPATH, '/descendant-or-self::*[contains("input a button", name()) ' \
-                         'and normalize-space(text()) = "%s"]' % str(path)
-
-    elif by == 'name':
-        return By.XPATH, '/descendant-or-self::*[@name="%s"]' % str(path)
-
-    elif by == 'partial link text':
-        return By.XPATH, '/descendant-or-self::*[contains("input a button", name()) ' \
-                         'and contains(normalize-space(text()), "%s")]' % str(path)
-
-    elif by == 'tag name':
-        return By.XPATH, '/descendant-or-self::%s' % str(path)
-
-    elif by == 'xpath':
-        return by, path
-
-    # All other cases return an empty statement
-    return By.XPATH, ''
+    else:
+        return By.XPATH, normalizers.get(_by, lambda x: '')(str(path))
 
 
 def join(*args):
@@ -95,26 +83,88 @@ class SeleniumObject(object):
             raise TypeError("'web_driver' MUST be a selenium WebDriver element")
 
         if 'name_attr' in kwargs.keys():
-
-            if isinstance(['name_attr'], basestring):
-                self._name_attr = kwargs['name_attr']
-
-            else:
-                self._name_attr = 'data-qa-id'
+            self._name_attr = kwargs['name_attr'] if isinstance(kwargs['name_attr'], basestring) else 'data-qa-id'
 
         else:
             self._name_attr = 'data-qa-id'
 
         if 'type_attr' in kwargs.keys():
-
-            if isinstance(['type_attr'], basestring):
-                self._type_attr = kwargs['type_attr']
-
-            else:
-                self._type_attr = 'data-qa-model'
+            self._name_attr = kwargs['type_attr'] if isinstance(kwargs['type_attr'], basestring) else 'data-qa-model'
 
         else:
             self._type_attr = 'data-qa-model'
+
+    def _wait_until(self, expected_condition, _by, path, timeout=30):
+        """Wait until expected condition is fulfilled
+
+        :param func expected_condition: Selenium expected condition
+        :param str _by: Selector method
+        :param str path: Selector path
+        :param timeout: Wait timeout in seconds
+        :return:
+        """
+
+        wait = WebDriverWait(self.driver, timeout) if isinstance(timeout, int) else WebDriverWait(self.driver, 30)
+
+        try:
+
+            if _by != 'element':
+
+                wait.until(expected_condition((_by, path)))
+                return True
+
+        except TimeoutException:
+            pass
+
+        return False
+
+    def wait_until_present(self, _by, path, timeout=30):
+        """Wait until the element is available to the DOM
+
+        :param str _by: Selector method
+        :param str path: Selector path
+        :param timeout: Wait timeout in seconds
+        :return:
+        """
+
+        return self._wait_until(ec.presence_of_element_located, _by, path, timeout)
+
+    def wait_until_appears(self, _by, path, timeout=30):
+        """Wait until the element appears
+
+        :param str _by: Selector method
+        :param str path: Selector path
+        :param int timeout: Wait timeout in seconds
+        :return: True, if the wait does not timeout
+        :rtype: bool
+        """
+
+        return self._wait_until(ec.visibility_of_element_located, _by, path, timeout)
+
+    def wait_until_disappears(self, _by, path, timeout=30):
+        """Wait until the element disappears
+
+        :param str _by: Selector method
+        :param str path: Selector path
+        :param int timeout: Wait timeout in seconds
+        :return: True, if the wait does not timeout
+        :rtype: bool
+        """
+
+        return self._wait_until(ec.invisibility_of_element_located, _by, path, timeout)
+
+    def wait_implicitly(self, s):
+        """Wait a set amount of time in seconds
+
+        :param int s: Seconds to wait
+        :return:
+        """
+
+        if isinstance(s, int):
+            self.driver.implicitly_wait(s)
+            return True
+
+        return False
 
 
 class Element(SeleniumObject):
@@ -124,22 +174,22 @@ class Element(SeleniumObject):
 
     """
 
-    def __init__(self, web_driver, by=By.XPATH, path=None, **kwargs):
+    def __init__(self, web_driver, _by=By.XPATH, path=None, **kwargs):
         """Basic Selenium element
 
         :param WebDriver web_driver: Selenium webdriver
-        :param str by: By selector
+        :param str _by: By selector
         :param str path: selection value
         :return:
         """
 
-        super(Element, self).__init__(web_driver)
+        super(Element, self).__init__(web_driver, **kwargs)
 
         # Instantiate selector
-        self.search_term = normalize(by=by, path=path)
+        self.search_term = normalize(_by=_by, path=path)
 
         # Add any additional attributes
-        for extra in kwargs.keys():
+        for extra in kwargs:
             self.__setattr__(extra, kwargs[extra])
 
     def __contains__(self, attribute):
@@ -152,12 +202,12 @@ class Element(SeleniumObject):
 
         if self.exists() and isinstance(attribute, basestring):
 
-            source = self.outerHTML
-            tree = html.fromstring(str(source))
-            root = tree.xpath('.')
+            try:
+                self.driver.find_element(join(self.search_term, ('xpath', '/self::*[boolean(@{0})]'.format(attribute))))
+                return True
 
-            if len(root) > 0:
-                return True if 'required' in root[0].keys() else False
+            except NoSuchElementException:
+                pass
 
         return False
 
@@ -165,20 +215,20 @@ class Element(SeleniumObject):
     def __getattr__(self, attribute):
         """Returns the value of an attribute
 
-        .. note:: class and for are both reserved keywords. Prepend '_' to reference both.
+        .. note:: class and for are both reserved keywords. Prepend/post-pend '_' to reference both.
 
         :param str attribute: Element attribute
         :return: Returns the string value
         :rtype: str
         """
 
-        if self.exists() and isinstance(attribute, basestring):
+        if self.exists():
 
             if keyword.iskeyword(attribute.replace('_', '')):
                 attribute = attribute.replace('_', '')
 
             else:
-                attribute = str(attribute).replace('_', '-')
+                attribute = attribute.replace('_', '-')
 
             return self.element().get_attribute(attribute)
 
@@ -194,10 +244,10 @@ class Element(SeleniumObject):
 
         return self.outerHTML if self.exists() else ''
 
-    def angular_element(self, path):
-        """Returns the angular scope for the element
+    def angular_scope(self, attribute):
+        """Returns an attribute from the angular scope
 
-        :param path:
+        :param str attribute:
         :return:
         """
 
@@ -205,8 +255,8 @@ class Element(SeleniumObject):
 
             try:
 
-                return self.driver.execute_script('return angular.element(arguments[0]).scope().{}'.format(str(path)),
-                                                  self.element())
+                return self.driver.execute_script('return angular.element(arguments[0]).scope().'
+                                                  '{}'.format(str(attribute)), self.element())
 
             except (TypeError, WebDriverException):
                 pass
@@ -231,6 +281,22 @@ class Element(SeleniumObject):
         """
 
         return self.element().value_of_css_property(str(prop)) if self.exists() else None
+
+    def drag(self, x_offset=0, y_offset=0):
+        """Drag element x,y pixels from its center
+
+        :param int x_offset: Pixels to move element to
+        :param int y_offset: Pixels to move element to
+        :return:
+        """
+
+        if self.exists() and isinstance(x_offset, int) and isinstance(y_offset, int):
+
+            action = ActionChains(self.driver)
+            action.click_and_hold(self.element()).move_by_offset(x_offset, y_offset).release().perform()
+            return True
+
+        return False
 
     def element(self):
         """Return the selenium webelement object
@@ -286,6 +352,15 @@ class Element(SeleniumObject):
 
         return self.element().is_displayed() if self.exists() else False
 
+    def parent(self):
+        """Returns the Selenium element for the current element
+
+        :return:
+        """
+
+        xpath = join(self.search_term, ('xpath', '/parent::*'))
+        return Element(self.driver, xpath[0], xpath[1])
+
     def scroll_to(self):
         """Scroll to the location of the element
 
@@ -314,68 +389,50 @@ class Element(SeleniumObject):
 
         return self.element().tag_name if self.exists() else ''
 
-    def wait_until_present(self, timeout=30):
+    def wait_until_present(self, _by=None, path=None, timeout=30):
         """Wait until the element is present
 
+        :param str _by: Selector method
+        :param str path: Selector path
         :param timeout: Wait timeout in seconds
         :return: True, if the wait does not timeout
         :rtype: bool
         """
 
-        wait = WebDriverWait(self.driver, timeout) if isinstance(timeout, int) else WebDriverWait(self.driver, 30)
+        if _by and path:
+            return super(Element, self).wait_until_present(_by, path, timeout=timeout)
 
-        try:
+        else:
+            return super(Element, self).wait_until_present(self.search_term[0], self.search_term[1], timeout=timeout)
 
-            if self.search_term[0] != 'element':
-
-                wait.until(ec.presence_of_element_located(self.search_term))
-                return True
-
-        except TimeoutException:
-            pass
-
-        return False
-
-    def wait_until_appears(self, timeout=30):
+    def wait_until_appears(self, _by=None, path=None, timeout=30):
         """Wait until the element appears
 
+        :param str _by: Selector method
+        :param str path: Selector path
         :param int timeout: Wait timeout in seconds
         :return: True, if the wait does not timeout
         :rtype: bool
         """
 
-        wait = WebDriverWait(self.driver, timeout) if isinstance(timeout, int) else WebDriverWait(self.driver, 30)
+        if _by and path:
+            return super(Element, self).wait_until_appears(_by, path, timeout=timeout)
 
-        try:
+        else:
+            return super(Element, self).wait_until_appears(self.search_term[0], self.search_term[1], timeout=timeout)
 
-            if self.search_term[0] != 'element':
-
-                wait.until(ec.visibility_of_element_located(self.search_term))
-                return True
-
-        except TimeoutException:
-            pass
-
-        return False
-
-    def wait_until_disappears(self, timeout=30):
+    def wait_until_disappears(self, _by=None, path=None, timeout=30):
         """Wait until the element disappears
 
+        :param str _by: Selector method
+        :param str path: Selector path
         :param int timeout: Wait timeout in seconds
         :return: True, if the wait does not timeout
         :rtype: bool
         """
 
-        wait = WebDriverWait(self.driver, timeout) if isinstance(timeout, int) else WebDriverWait(self.driver, 30)
+        if _by and path:
+            return super(Element, self).wait_until_disappears(_by, path, timeout=timeout)
 
-        try:
-
-            if self.search_term[0] != 'element':
-
-                wait.until(ec.invisibility_of_element_located(self.search_term))
-                return True
-
-        except TimeoutException:
-            pass
-
-        return False
+        else:
+            return super(Element, self).wait_until_disappears(self.search_term[0], self.search_term[1], timeout=timeout)

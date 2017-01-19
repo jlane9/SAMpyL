@@ -102,6 +102,26 @@ class ClickMixin(ElementMixin):
 
         return False
 
+    def double_click(self):
+        """Double-click element
+
+        :return:
+        """
+
+        if self.exists():
+
+            element = self.element()
+
+            try:
+
+                if not element.is_displayed():
+                    self.scroll_to()
+
+                return ActionChains(self.driver).double_click(element).perform()
+
+            except (ElementNotVisibleException, WebDriverException):
+                pass
+
     def hover(self):
         """Simulate hovering over element
 
@@ -128,30 +148,31 @@ class InputMixin(ElementMixin):
     """
 
     def __str__(self):
-        return self.value()
+        return self.value
 
-    def input(self, text, clear=True):
-        """Send text to a input field
+    def input(self, *args, **kwargs):
+        """
 
-        :param str text: Text to send to the input field
-        :param bool clear: True if user wants to clear the field before assigning text
+        :param args: Text to send to the input field
+        :param kwargs: clear - True if user wants to clear the field before assigning text
         :return: True, if text is assigned
         :rtype: bool
         """
 
-        if self.exists() and isinstance(text, basestring):
+        if self.exists():
 
             element = self.element()
 
-            if clear:
+            if 'clear' in kwargs:
                 element.clear()
 
-            element.send_keys(text)
+            element.send_keys(*args)
 
             return True
 
         return False
 
+    @property
     @encode_ascii()
     def value(self):
         """Return value of input
@@ -161,6 +182,12 @@ class InputMixin(ElementMixin):
         """
 
         return self.element().get_attribute('value') if self.exists() else ''
+
+    @value.setter
+    def value(self, value):
+
+        if self.exists():
+            self.driver.execute_script('arguments[0].value = arguments[1]', self.element(), str(value))
 
 
 class SelectMixin(ElementMixin):
