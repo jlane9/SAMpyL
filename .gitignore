@@ -81,6 +81,10 @@ celerybeat-schedule
 # virtualenv
 venv/
 ENV/
+bin/
+include/
+lib/
+pip-selfcheck.json
 
 # Spyder project settings
 .spyderproject
@@ -89,6 +93,9 @@ ENV/
 .ropeproject
 
 # Created by .ignore support plugin (hsz.mobi)
+
+# Selenium
+selenium/
 
 # Intellij IDEA files
 .idea/
