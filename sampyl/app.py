@@ -5,17 +5,17 @@
 
 """
 
-from sampyl.core.element import SeleniumObject
-# from sampyl.core.inspection import save_inspection
-from sampyl.core.structures import TYPES as T
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.support import expected_conditions as ec
-from selenium.webdriver.support.ui import WebDriverWait
-from urlparse import urlparse
+# pylint: disable=line-too-long
 import keyword
 import re
 import warnings
+from urlparse import urlparse
+from sampyl.core.element import SeleniumObject
+from sampyl.core.structures import TYPES as T
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.common.exceptions import NoSuchElementException
+
 
 __all__ = ['App', 'Node']
 
@@ -24,27 +24,45 @@ DEFAULT_TYPE = 'text'
 
 
 def is_legal_variable_name(name):
+    """Determines whether the name attribute value is a valid variable name
+
+    :param str name: Name attribute
+    :return:
+    """
 
     if isinstance(name, basestring):
         if not keyword.iskeyword(name):
-            return bool(re.compile(r'^[a-zA-Z_][a-zA-Z0-9_]*$').search(name))
+            return bool(re.compile(r'^[a-zA-Z_][\w]*$').search(name))
 
     return False
 
 
 def force_legal_variable_name(name):
+    """Forces name attribute into a valid variable name
 
-    if isinstance(name, basestring):
+    :param str name: Name attribute
+    :return:
+    """
 
-        re_keyword = '|'.join(['(^{}$)'.format(item) for item in keyword.kwlist])
+    if not is_legal_variable_name(name):
 
-        return re.sub('|'.join(['(^[0-9]?[^a-zA-Z_])', re_keyword]), '_', name)
+        if isinstance(name, basestring):
 
-    return '_'
+            re_keyword = '|'.join(['(^{}$)'.format(item) for item in keyword.kwlist])
+
+            keyword_safe = re.sub('({})'.format(re_keyword), '_\g<1>', name)
+
+            return re.sub('^\d|[^\w]', '_', keyword_safe)
+
+        return '_'
+
+    return name
 
 
 class App(SeleniumObject):
     """The App implementation
+
+    .. TODO:: Add the ability define which types are available
     """
 
     scheme = ""
@@ -66,16 +84,6 @@ class App(SeleniumObject):
             if self.hostname != '':
                 self.get('%s://%s' % (self.scheme, self.hostname))
 
-    @staticmethod
-    def save_inspection(self, filename, name_attr='data-qa-id'):
-
-        return
-
-        # assert isinstance(filename, basestring)
-
-        # with open(filename, 'w') as f:
-        #    f.write(save_inspection(self.driver, self.driver.get_screenshot_as_base64(), self.update(), name_attr))
-
     def get(self, url):
         """Instruct Selenium to navigate to the following url
 
@@ -89,9 +97,9 @@ class App(SeleniumObject):
         raise TypeError('Incorrect type for \'url\', url must be of type \'str\'')
 
     def navigate_to(self, path):
-        """
+        """Instructs Selenium to navigate to a different path under the hostname
 
-        :param str path:
+        :param str path: Path from hostname
         :return:
         """
 
@@ -107,95 +115,82 @@ class App(SeleniumObject):
                 if self.hostname != '':
                     return self.get('%s://%s%s' % (scheme, self.hostname, url_path))
 
-                raise NotImplementedError('This action cannot be completed because hostname is not set')
+                raise NotImplementedError('Action cannot be completed because hostname is not set')
 
         raise TypeError('Incorrect type for \'path\', path must be of type \'str\'')
 
     def update(self, name_attr='data-qa-id', type_attr='data-qa-model'):
+        """
+
+        :param str name_attr:
+        :param str type_attr:
+        :return:
+        """
 
         if isinstance(name_attr, basestring) and isinstance(type_attr, basestring):
 
-            identifiers = [e.get_attribute(name_attr)
-                           for e in self.driver.find_elements(By.XPATH, '/descendant-or-self::*[@%s]' % name_attr)]
+            identifiers = [e.get_attribute(name_attr) for e in
+                           self.driver.find_elements(By.XPATH, '/descendant-or-self::*[@{0}]'.format(name_attr))]
 
             duplicates = set([_id for _id in identifiers if identifiers.count(_id) > 1])
 
             if len(duplicates) > 0:
 
-                msg = ' '.join(['UniquenessWarning: There appears to be multiple elements with the same identifier. '
-                                'Please review the following element(s):', ', '.join(duplicates)])
+                msg = ' '.join(['UniquenessWarning: There appears to be multiple elements with the'
+                                ' same identifier. Please review the following element(s):',
+                                ', '.join(duplicates)])
+
                 warnings.warn(msg)
 
             self.page = Node(self.driver, name_attr=name_attr, type_attr=type_attr)
             self.page.add_children(*set(identifiers))
 
-    def wait_until_present(self, _id, timeout=30):
+    def wait_until_present(self, path, _by=None, timeout=30):
         """Wait until element with id is present
 
-        :param str _id: Element id to wait for
+        :param str _by:
+        :param str path:
         :param int timeout: Wait timeout in seconds
         :return:
         """
 
-        search = '/descendant-or-self::*[contains(@data-qa-id, "{0}")]'
+        if not _by and isinstance(path, basestring):
+            _by = 'xpath'
+            path = '/descendant-or-self::*[contains(@{0}, "{1}")]'.format(self._name_attr, path)
 
-        wait = WebDriverWait(self.driver, timeout) if isinstance(timeout, int) else WebDriverWait(self.driver, 30)
+        return super(App, self).wait_until_present(_by, path, timeout=timeout)
 
-        try:
-
-            wait.until(ec.presence_of_element_located((By.XPATH, search.format(str(_id)))))
-            return True
-
-        except TimeoutException:
-            pass
-
-        return False
-
-    def wait_until_appears(self, _id, timeout=30):
+    def wait_until_appears(self, path, _by, timeout=30):
         """Wait until the element appears
 
-        :param str _id: Element id to wait for
+        :param str _by:
+        :param str path:
         :param int timeout: Wait timeout in seconds
         :return: True, if the wait does not timeout
         :rtype: bool
         """
 
-        search = '/descendant-or-self::*[contains(@data-qa-id, "{0}")]'
+        if not _by and isinstance(path, basestring):
+            _by = 'xpath'
+            path = '/descendant-or-self::*[contains(@{0}, "{1}")]'.format(self._name_attr, path)
 
-        wait = WebDriverWait(self.driver, timeout) if isinstance(timeout, int) else WebDriverWait(self.driver, 30)
+        return super(App, self).wait_until_appears(_by, path, timeout=timeout)
 
-        try:
-
-            wait.until(ec.visibility_of_element_located((By.XPATH, search.format(str(_id)))))
-            return True
-
-        except TimeoutException:
-            pass
-
-        return False
-
-    def wait_until_disappears(self, _id, timeout=30):
+    def wait_until_disappears(self, path, _by, timeout=30):
         """Wait until the element disappears
 
-        :param str _id: Element id to wait for
+        :param str _by:
+        :param str path:
         :param int timeout: Wait timeout in seconds
         :return: True, if the wait does not timeout
         :rtype: bool
         """
 
-        search = '/descendant-or-self::*[contains(@data-qa-id, "{0}")]'
+        if not _by and isinstance(path, basestring):
+            _by = 'xpath'
+            path = '/descendant-or-self::*[contains(@{0}, "{1}")]'.format(self._name_attr, path)
 
-        wait = WebDriverWait(self.driver, timeout) if isinstance(timeout, int) else WebDriverWait(self.driver, 30)
-
-        try:
-
-            wait.until(ec.invisibility_of_element_located((By.XPATH, search.format(str(_id)))))
-            return True
-
-        except TimeoutException:
-            pass
-
-        return False
+        return super(App, self).wait_until_disappears(_by, path, timeout=timeout)
 
 
 class Node(SeleniumObject):
@@ -203,6 +198,7 @@ class Node(SeleniumObject):
     """
 
     __PATH = '/descendant-or-self::*[@{0}="{1}"]'
+    DELIMITER = '.'
 
     def __init__(self, web_driver, identifier=None, root=None, **kwargs):
 
@@ -214,13 +210,13 @@ class Node(SeleniumObject):
         root = root if isinstance(root, basestring) else ''
 
         # Get the first attribute from the identifier
-        cur = identifier.split('.', 1)
+        cur = identifier.split(self.DELIMITER, 1)
 
         # Assign identifier
         if cur[0] != '':
 
             if root != '':
-                self._identifier = '.'.join((root, cur[0]))
+                self._identifier = self.DELIMITER.join((root, cur[0]))
 
             else:
                 self._identifier = cur[0]
@@ -231,10 +227,11 @@ class Node(SeleniumObject):
         # The identifier has "leftover" attributes, recursively create child nodes
         if len(cur) > 1:
 
-            child = cur[1].split('.', 1)[0]
+            child = cur[1].split(self.DELIMITER, 1)[0]
 
             if child != '':
-                self.__setitem__(child, Node(web_driver=web_driver, identifier=cur[1], root=self._identifier))
+                self.__setitem__(child, Node(web_driver=web_driver,
+                                             identifier=cur[1], root=self._identifier))
 
     def __getattr__(self, item):
 
@@ -253,6 +250,12 @@ class Node(SeleniumObject):
                 if hasattr(attr, '__call__'):
 
                     def indirect_call_to_this(*args, **kwargs):
+                        """
+
+                        :param args:
+                        :param kwargs:
+                        :return:
+                        """
 
                         return attr(*args, **kwargs)
 
@@ -284,6 +287,7 @@ class Node(SeleniumObject):
             if isinstance(value, Node):
 
                 self._children[str(key)] = value
+                setattr(self, force_legal_variable_name(key), value)
                 return
 
             raise TypeError("value %s is not valid, use value <type 'Node'>" % type(value))
@@ -308,14 +312,15 @@ class Node(SeleniumObject):
 
         child = child if isinstance(child, basestring) else ''
 
-        cur = child.split('.', 1)
+        cur = child.split(self.DELIMITER, 1)
 
         if cur[0] != '':
 
             # If this Node has not been created
             if cur[0] not in self.keys():
 
-                self.__setitem__(cur[0], Node(web_driver=self.driver, identifier=child, root=self._identifier))
+                self.__setitem__(cur[0], Node(web_driver=self.driver,
+                                              identifier=child, root=self._identifier))
 
             # If the Node already exists
             elif len(cur) > 1:
@@ -335,20 +340,6 @@ class Node(SeleniumObject):
 
         for arg in args:
             self.add_child(arg)
-
-    @property
-    def element(self):
-        """Returns the Selenium WebElement for this nodes
-
-        :return: Selenium WebElement
-        """
-
-        if self._identifier != '':
-
-            elements = self.driver.find_elements(By.XPATH, self.xpath())
-
-            if len(elements) > 0:
-                return elements[0]
 
     @property
     def this(self):
@@ -379,9 +370,19 @@ class Node(SeleniumObject):
         :rtype: str
         """
 
-        _type = self.element.get_attribute(self._type_attr) if self.element is not None else 'div'
+        try:
+            element = self.driver.find_element_by_xpath(self.xpath())
 
-        return _type.lower() if _type is not None else DEFAULT_TYPE
+        except NoSuchElementException:
+            element = None
+
+        _type = element.get_attribute(self._type_attr) if element else None
+
+        if _type:
+            return _type.lower()
+
+        else:
+            return DEFAULT_TYPE
 
     def json(self):
         """Return json representation of Node and it's nested children
@@ -390,9 +391,56 @@ class Node(SeleniumObject):
         :rtype: dict
         """
 
-        json = {'nodeName': self._identifier, 'nodeType': self.type()} if self._identifier != '' else {}
+        json = {'nodeName': self._identifier, 'nodeType': self.type()} \
+            if self._identifier != '' else {}
 
         for child in self.keys():
             json[child] = self.__getitem__(child).json()
 
         return json
+
+    def wait_until_present(self, _by=None, path=None, timeout=30):
+        """Wait until the element is available to the DOM
+
+        :param str _by: Selector method
+        :param str path: Selector path
+        :param timeout: Wait timeout in seconds
+        :return:
+        """
+
+        if _by and path:
+            self._wait_until(ec.presence_of_element_located, _by, path, timeout)
+
+        else:
+            return self._wait_until(ec.presence_of_element_located, 'xpath', self.xpath(), timeout)
+
+    def wait_until_appears(self, _by=None, path=None, timeout=30):
+        """Wait until the element appears
+
+        :param str _by: Selector method
+        :param str path: Selector path
+        :param int timeout: Wait timeout in seconds
+        :return: True, if the wait does not timeout
+        :rtype: bool
+        """
+
+        if _by and path:
+            return self._wait_until(ec.visibility_of_element_located, _by, path, timeout)
+
+        else:
+            return self._wait_until(ec.visibility_of_element_located, 'xpath', self.xpath(), timeout)
+
+    def wait_until_disappears(self, _by=None, path=None, timeout=30):
+        """Wait until the element disappears
+
+        :param str _by: Selector method
+        :param str path: Selector path
+        :param int timeout: Wait timeout in seconds
+        :return: True, if the wait does not timeout
+        :rtype: bool
+        """
+        if _by and path:
+            return self._wait_until(ec.invisibility_of_element_located, _by, path, timeout)
+
+        else:
+            return self._wait_until(ec.invisibility_of_element_located, 'xpath', self.xpath(), timeout)
