@@ -160,7 +160,7 @@ class App(SeleniumObject):
 
         return super(App, self).wait_until_present(_by, path, timeout=timeout)
 
-    def wait_until_appears(self, path, _by, timeout=30):
+    def wait_until_appears(self, path, _by=None, timeout=30):
         """Wait until the element appears
 
         :param str _by:
@@ -176,7 +176,7 @@ class App(SeleniumObject):
 
         return super(App, self).wait_until_appears(_by, path, timeout=timeout)
 
-    def wait_until_disappears(self, path, _by, timeout=30):
+    def wait_until_disappears(self, path, _by=None, timeout=30):
         """Wait until the element disappears
 
         :param str _by:
