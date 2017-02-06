@@ -1,3 +1,6 @@
+"""SAMpyL setup.py
+"""
+
 from setuptools import setup, find_packages
 from sampyl import __author__, __email__, __license__, __version__
 
@@ -5,8 +8,8 @@ setup(
     name='sampyl',
     version=__version__,
     packages=find_packages(),
-    description='A wrapper for Selenium. This library uses custom data attributes to accelerate testing '
-    'through the Selenium framework',
+    description='A wrapper for Selenium. This library uses custom data attributes to accelerate '
+                'testing through the Selenium framework',
     author=__author__,
     author_email=__email__,
     url='https://github.com/jlane9/SAMpyL',
