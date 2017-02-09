@@ -13,7 +13,7 @@ setup(
     author=__author__,
     author_email=__email__,
     url='https://github.com/jlane9/SAMpyL',
-    download_url='https://github.com/jlane9/SAMpyL/tarball/0.1.6',
+    download_url='https://github.com/jlane9/SAMpyL/tarball/%s' % __version__,
     keywords='testing selenium qa web automation',
     install_requires=['lxml', 'cssselect', 'PyYAML'],
     license=__license__,
