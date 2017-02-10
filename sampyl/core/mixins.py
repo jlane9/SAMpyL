@@ -98,7 +98,14 @@ class ClickMixin(ElementMixin):
                 return True
 
             except (ElementNotVisibleException, WebDriverException):
-                pass
+
+                self.scroll_to()
+
+                try:
+                    element.click()
+
+                except (ElementNotVisibleException, WebDriverException):
+                    pass
 
         return False
 
@@ -120,7 +127,14 @@ class ClickMixin(ElementMixin):
                 return ActionChains(self.driver).double_click(element).perform()
 
             except (ElementNotVisibleException, WebDriverException):
-                pass
+
+                self.scroll_to()
+
+                try:
+                    element.click()
+
+                except (ElementNotVisibleException, WebDriverException):
+                    pass
 
     def hover(self):
         """Simulate hovering over element

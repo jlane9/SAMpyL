@@ -10,7 +10,7 @@ import keyword
 import re
 import warnings
 from urlparse import urlparse
-from sampyl.core.element import SeleniumObject
+from sampyl.core.element import SeleniumObject, DEFAULT_NAME_ATTR, DEFAULT_TYPE_ATTR
 from sampyl.core.structures import TYPES as T
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
@@ -119,7 +119,7 @@ class App(SeleniumObject):
 
         raise TypeError('Incorrect type for \'path\', path must be of type \'str\'')
 
-    def update(self, name_attr='data-qa-id', type_attr='data-qa-model'):
+    def update(self, name_attr=DEFAULT_NAME_ATTR, type_attr=DEFAULT_TYPE_ATTR):
         """
 
         :param str name_attr:
