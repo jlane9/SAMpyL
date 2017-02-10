@@ -20,6 +20,9 @@ from selenium.common.exceptions import InvalidSelectorException, NoSuchElementEx
 
 __all__ = ['Element']
 
+DEFAULT_NAME_ATTR = 'data-qa-id'
+DEFAULT_TYPE_ATTR = 'data-qa-model'
+
 
 def normalize(_by, path, *args, **kwargs):
     """Convert all paths into a xpath selector
@@ -83,16 +86,16 @@ class SeleniumObject(object):
             raise TypeError("'web_driver' MUST be a selenium WebDriver element")
 
         if 'name_attr' in kwargs.keys():
-            self._name_attr = kwargs['name_attr'] if isinstance(kwargs['name_attr'], basestring) else 'data-qa-id'
+            self._name_attr = kwargs['name_attr'] if isinstance(kwargs['name_attr'], basestring) else DEFAULT_NAME_ATTR
 
         else:
-            self._name_attr = 'data-qa-id'
+            self._name_attr = DEFAULT_NAME_ATTR
 
         if 'type_attr' in kwargs.keys():
-            self._name_attr = kwargs['type_attr'] if isinstance(kwargs['type_attr'], basestring) else 'data-qa-model'
+            self._name_attr = kwargs['type_attr'] if isinstance(kwargs['type_attr'], basestring) else DEFAULT_TYPE_ATTR
 
         else:
-            self._type_attr = 'data-qa-model'
+            self._type_attr = DEFAULT_TYPE_ATTR
 
     def _wait_until(self, expected_condition, _by, path, timeout=30):
         """Wait until expected condition is fulfilled
