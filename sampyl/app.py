@@ -19,7 +19,6 @@ from selenium.common.exceptions import NoSuchElementException
 
 __all__ = ['App', 'Node']
 
-RESERVED = ('nodeName', 'nodeType', 'this')
 DEFAULT_TYPE = 'text'
 
 
@@ -132,7 +131,7 @@ class App(SeleniumObject):
             identifiers = [e.get_attribute(name_attr) for e in
                            self.driver.find_elements(By.XPATH, '/descendant-or-self::*[@{0}]'.format(name_attr))]
 
-            duplicates = set([_id for _id in identifiers if identifiers.count(_id) > 1])
+            duplicates = set(['"{}"'.format(_id) for _id in identifiers if identifiers.count(_id) > 1])
 
             if len(duplicates) > 0:
 
@@ -282,17 +281,13 @@ class Node(SeleniumObject):
 
     def __setitem__(self, key, value):
 
-        if key not in RESERVED:
+        if isinstance(value, Node):
 
-            if isinstance(value, Node):
+            self._children[str(key)] = value
+            setattr(self, force_legal_variable_name(key), value)
+            return
 
-                self._children[str(key)] = value
-                setattr(self, force_legal_variable_name(key), value)
-                return
-
-            raise TypeError("value %s is not valid, use value <type 'Node'>" % type(value))
-
-        raise KeyError('%s is a reserved keyword' % str(key))
+        raise TypeError("value %s is not valid, use value <type 'Node'>" % type(value))
 
     def keys(self):
         """Returns a list of this node's children
