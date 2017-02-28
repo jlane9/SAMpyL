@@ -16,16 +16,13 @@ done
 
 
 # Navigate to SDA path
-cd $HOME/sampyl/SAMpyL/ad
+cd $HOME/Projects/SAMpyL
 
 # Update versions on files
 sed -i '' -E -- "s/__version__ = '.*'/__version__ = '$VERSION'/g" sampyl/__init__.py
-sed -i '' -E -- "s/version='.*'/version='$VERSION'/g" setup.py
-sed -i '' -E -- "s/download_url='.*'/download_url='https:\/\/github.com\/jlane9\/SAMpyL\/tarball\/$VERSION'/g" setup.py
 
 # Add GitHub release tag
 git add sampyl/__init__.py
-git add setup.py
 git commit -m "PyPi release $VERSION"
 git tag ${VERSION} -m "PyPi release $VERSION"
 git push --tags origin master
