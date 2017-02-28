@@ -379,21 +379,6 @@ class Node(SeleniumObject):
         else:
             return DEFAULT_TYPE
 
-    def json(self):
-        """Return json representation of Node and it's nested children
-
-        :return: JSON
-        :rtype: dict
-        """
-
-        json = {'nodeName': self._identifier, 'nodeType': self.type()} \
-            if self._identifier != '' else {}
-
-        for child in self.keys():
-            json[child] = self.__getitem__(child).json()
-
-        return json
-
     def wait_until_present(self, _by=None, path=None, timeout=30):
         """Wait until the element is available to the DOM
 
