@@ -238,7 +238,7 @@ class Element(SeleniumObject):
         return ''
 
     @encode_ascii()
-    def __repr__(self):
+    def __str__(self):
         """Returns HTML representation of the element
 
         :return: HTML representation of the element
@@ -246,6 +246,10 @@ class Element(SeleniumObject):
         """
 
         return self.outerHTML if self.exists() else ''
+
+    def __repr__(self):
+
+        return '<{} name="{}" type="{}">'.format(self.__class__.__name__, *self.search_term)
 
     def angular_scope(self, attribute):
         """Returns an attribute from the angular scope
