@@ -196,7 +196,7 @@ class Dropdown(Element, ClickMixin, TextMixin):
             else:
                 self._toggle.click()
 
-            self._container.wait_until_appears()
+            return self._container.wait_until_appears()
 
     def collapse(self, hover=False):
         """Hide dropdown
@@ -211,7 +211,7 @@ class Dropdown(Element, ClickMixin, TextMixin):
             else:
                 self._toggle.click()
 
-            self._container.wait_until_disappears()
+            return self._container.wait_until_disappears()
 
 
 class Image(Element):
