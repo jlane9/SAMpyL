@@ -8,6 +8,7 @@
 # pylint: disable=line-too-long
 import inspect
 import sys
+import warnings
 from selenium.webdriver.common.by import By
 from sampyl.core.element import Element, join
 from sampyl.core.mixins import ClickMixin, InputMixin, SelectMixin, SelectiveMixin, TextMixin
@@ -216,7 +217,7 @@ class Dropdown(Element, ClickMixin, TextMixin):
 
 class Form(Element):
 
-    def get_field(self, field_name):
+    def _get_field(self, field_name):
 
         if not isinstance(field_name, basestring):
             raise TypeError
@@ -226,6 +227,23 @@ class Form(Element):
 
         if elements:
             return elements[0]
+
+    def get_field(self, field_name):
+
+        field = self._get_field(field_name)
+
+        if field:
+
+            xpath = '/descendant-or-self::*[(self::input and @type="text") or self::select and @name="{}"]'
+
+            if field.tag_name == u'input':
+                return InputText(self.driver, *join(self.search_term, (By.XPATH, xpath.format(field_name))))
+
+            elif field.tag_name == u'select':
+                return Select(self.driver, *join(self.search_term, (By.XPATH, xpath.format(field_name))))
+
+            else:
+                warnings.warn('{} type not currently supported within form'.format(str(field.tag_name)))
 
 
 class Image(Element):
