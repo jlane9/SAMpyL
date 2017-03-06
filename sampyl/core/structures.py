@@ -214,6 +214,20 @@ class Dropdown(Element, ClickMixin, TextMixin):
             return self._container.wait_until_disappears()
 
 
+class Form(Element):
+
+    def get_field(self, field_name):
+
+        if not isinstance(field_name, basestring):
+            raise TypeError
+
+        xpath = '/descendant-or-self::*[(self::input and @type="text") or self::select and @name="{}"]'
+        elements = self.driver.find_elements(By.XPATH, join(self.search_term, (By.XPATH, xpath.format(field_name))))
+
+        if elements:
+            return elements[0]
+
+
 class Image(Element):
     """The Image implementation
 
