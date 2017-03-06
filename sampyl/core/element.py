@@ -206,7 +206,7 @@ class Element(SeleniumObject):
         if self.exists() and isinstance(attribute, basestring):
 
             try:
-                self.driver.find_element(join(self.search_term, ('xpath', '/self::*[boolean(@{0})]'.format(attribute))))
+                self.driver.find_element(*join(self.search_term, ('xpath', '/self::*[boolean(@{})]'.format(attribute))))
                 return True
 
             except NoSuchElementException:

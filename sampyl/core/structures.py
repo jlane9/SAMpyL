@@ -222,7 +222,7 @@ class Form(Element):
         if not isinstance(field_name, basestring):
             raise TypeError
 
-        xpath = '/descendant-or-self::*[(self::input and @type="text") or self::select and @name="{}"]'
+        xpath = '/descendant-or-self::*[((self::input and @type="text") or self::select) and @name="{}"]'
         elements = self.driver.find_elements(*join(self.search_term, (By.XPATH, xpath.format(field_name))))
 
         if elements:
@@ -234,13 +234,14 @@ class Form(Element):
 
         if field:
 
-            xpath = '/descendant-or-self::*[(self::input and @type="text") or self::select and @name="{}"]'
+            input_xpath = '/descendant-or-self::*[(self::input and @type="text") and @name="{}"]'
+            select_xpath = '/descendant-or-self::*[self::select and @name="{}"]'
 
             if field.tag_name == u'input':
-                return InputText(self.driver, *join(self.search_term, (By.XPATH, xpath.format(field_name))))
+                return InputText(self.driver, *join(self.search_term, (By.XPATH, input_xpath.format(field_name))))
 
             elif field.tag_name == u'select':
-                return Select(self.driver, *join(self.search_term, (By.XPATH, xpath.format(field_name))))
+                return Select(self.driver, *join(self.search_term, (By.XPATH, select_xpath.format(field_name))))
 
             else:
                 warnings.warn('{} type not currently supported within form'.format(str(field.tag_name)))
