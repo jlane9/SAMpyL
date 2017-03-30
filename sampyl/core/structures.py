@@ -215,6 +215,28 @@ class Dropdown(Element, ClickMixin, TextMixin):
             return self._container.wait_until_disappears()
 
 
+class BadgeDropdown(Dropdown):
+    """Badge dropdown to capture hover event
+    
+    """
+
+    def show(self):
+        """Show dropdown on mousein of badge
+        
+        :return: 
+        """
+
+        return self.expand(True)
+
+    def hide(self):
+        """Hide dropdown on mouseout of badge
+        
+        :return: 
+        """
+
+        return self.collapse(True)
+
+
 class Form(Element):
 
     def _get_field(self, field_name):
