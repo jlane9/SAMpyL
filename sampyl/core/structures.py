@@ -222,7 +222,8 @@ class Form(Element):
         if not isinstance(field_name, basestring):
             raise TypeError
 
-        xpath = '/descendant-or-self::*[((self::input and @type="text") or self::select) and @name="{}"]'
+        xpath = '/descendant-or-self::*[((self::input and @type="text") or ' \
+                'self::textarea or self::select) and @name="{}"]'
         elements = self.driver.find_elements(*join(self.search_term, (By.XPATH, xpath.format(field_name))))
 
         if elements:
@@ -234,10 +235,10 @@ class Form(Element):
 
         if field:
 
-            input_xpath = '/descendant-or-self::*[(self::input and @type="text") and @name="{}"]'
+            input_xpath = '/descendant-or-self::*[((self::input and @type="text") or self::textarea) and @name="{}"]'
             select_xpath = '/descendant-or-self::*[self::select and @name="{}"]'
 
-            if field.tag_name == u'input':
+            if field.tag_name == u'input' or field.tag_name == u'textarea':
                 return InputText(self.driver, *join(self.search_term, (By.XPATH, input_xpath.format(field_name))))
 
             elif field.tag_name == u'select':
