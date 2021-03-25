@@ -1,4 +1,4 @@
 cssselect==0.9.1
 lxml==3.5.0
 selenium>=2.48.0
-PyYAML==3.11
+PyYAML==5.4
